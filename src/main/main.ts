@@ -4,18 +4,19 @@ import { createMainWindow, createQuickWindow } from './windows';
 import { registerIpc } from './ipc';
 import logger from './logger';
 
+declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string | undefined;
+declare const MAIN_WINDOW_VITE_NAME: string;
+
 if (started) {
   app.quit();
 }
 
 app.whenReady().then(() => {
-  const devURL = process.env.MAIN_WINDOW_VITE_DEV_SERVER_URL;
-  const prodBase = `../renderer/${process.env.MAIN_WINDOW_VITE_NAME}`;
-
-  createMainWindow(devURL, prodBase);
+  createMainWindow();
   registerIpc();
 
-  globalShortcut.register('Alt+Command+K', () => createQuickWindow(devURL, prodBase));
+  // Global hotkey for quick‑add modal
+  globalShortcut.register('Alt+Command+K', () => createQuickWindow());
   logger.info('QuestXP ready');
 });
 
@@ -25,8 +26,6 @@ app.on('window-all-closed', () => {
 
 app.on('activate', () => {
   if (global.BrowserWindow?.getAllWindows().length === 0) {
-    const devURL = process.env.MAIN_WINDOW_VITE_DEV_SERVER_URL;
-    const prodBase = `../renderer/${process.env.MAIN_WINDOW_VITE_NAME}`;
-    createMainWindow(devURL, prodBase);
+    createMainWindow();
   }
 });

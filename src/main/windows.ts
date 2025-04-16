@@ -1,11 +1,20 @@
 import { BrowserWindow } from 'electron';
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import logger from './logger';
+
+declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string | undefined;
+declare const MAIN_WINDOW_VITE_NAME: string;
 
 let mainWindow: BrowserWindow | null = null;
 let quickWindow: BrowserWindow | null = null;
 
-export function createMainWindow(devURL?: string, prodBase?: string) {
+function buildFileUrl(): string {
+  const htmlPath = path.join(__dirname, `../renderer/${MAIN_WINDOW_VITE_NAME}/index.html`);
+  return pathToFileURL(htmlPath).href;
+}
+
+export function createMainWindow() {
   logger.debug('Creating main window');
   mainWindow = new BrowserWindow({
     width: 900,
@@ -13,11 +22,14 @@ export function createMainWindow(devURL?: string, prodBase?: string) {
     webPreferences: { preload: path.join(__dirname, 'preload.js') },
   });
 
-  if (devURL) mainWindow.loadURL(devURL);
-  else mainWindow.loadFile(path.join(prodBase!, 'index.html'));
+  if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
+    mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
+  } else {
+    mainWindow.loadURL(buildFileUrl());
+  }
 }
 
-export function createQuickWindow(devURL?: string, prodBase?: string) {
+export function createQuickWindow() {
   if (quickWindow) {
     quickWindow.show();
     quickWindow.focus();
@@ -34,7 +46,10 @@ export function createQuickWindow(devURL?: string, prodBase?: string) {
     webPreferences: { preload: path.join(__dirname, 'preload.js') },
   });
 
-  const url = devURL ? `${devURL}?quick=1` : `file://${path.join(prodBase!, 'index.html?quick=1')}`;
+  const url = MAIN_WINDOW_VITE_DEV_SERVER_URL
+    ? `${MAIN_WINDOW_VITE_DEV_SERVER_URL}?quick=1`
+    : `${buildFileUrl()}?quick=1`;
+
   quickWindow.loadURL(url);
   quickWindow.on('blur', () => quickWindow?.hide());
   quickWindow.on('closed', () => (quickWindow = null));

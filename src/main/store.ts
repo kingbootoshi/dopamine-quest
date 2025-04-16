@@ -1,6 +1,7 @@
 import { app } from 'electron';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import logger from './logger';
 
 export interface Task {
   id: string;
@@ -25,8 +26,11 @@ export async function loadTasks(): Promise<Task[]> {
   await ensureFile();
   const raw = await fs.readFile(filePath, 'utf-8');
   try {
-    return JSON.parse(raw);
-  } catch {
+    const tasks = JSON.parse(raw);
+    logger.debug(`Loaded ${tasks.length} tasks`);
+    return tasks;
+  } catch (err) {
+    logger.error('Failed to parse tasks.json', err as Error);
     return [];
   }
 }
@@ -36,5 +40,6 @@ export async function saveTask(task: Task): Promise<Task> {
   const tasks = await loadTasks();
   tasks.push(task);
   await fs.writeFile(filePath, JSON.stringify(tasks, null, 2), 'utf-8');
+  logger.info(`Saved task "${task.title}" (+${task.xp} XP)`);
   return task;
 }

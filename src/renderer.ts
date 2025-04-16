@@ -15,6 +15,16 @@ const addTaskSfx = new Audio(addTaskSrc);
 const levelUpSfx = new Audio(levelUpSrc);
 // --------------- //
 
+// tiny helper so we never lose logs
+function log(level: string, message: string) {
+  try {
+    window.api.log(level, message);
+  } catch {
+    // eslint-disable-next-line no-console
+    console[level === 'error' ? 'error' : 'log'](message);
+  }
+}
+
 const params = new URLSearchParams(location.search);
 const isQuick = params.get('quick') === '1';
 
@@ -41,9 +51,18 @@ async function renderQuickAdd(existingTasks: Task[]) {
     };
 
     await window.api.addTask(task);
+    log('info', `Saved task "${task.title}" (+${task.xp} XP)`);
+
+    // play SFX then close window
     addTaskSfx.currentTime = 0;
-    addTaskSfx.play();
-    window.close();
+    addTaskSfx
+      .play()
+      .then(() => log('debug', 'addTaskSfx played'))
+      .catch((err) => log('error', `addTaskSfx failed: ${err}`));
+
+    addTaskSfx.addEventListener('ended', () => window.close());
+    // fallback – never leave stray window
+    setTimeout(() => window.close(), 2000);
   });
 }
 
@@ -58,7 +77,10 @@ function renderMain(tasks: Task[]) {
 
   if (level > prevLevel) {
     levelUpSfx.currentTime = 0;
-    levelUpSfx.play();
+    levelUpSfx
+      .play()
+      .then(() => log('debug', 'levelUpSfx played'))
+      .catch((err) => log('error', `levelUpSfx failed: ${err}`));
   }
   prevLevel = level;
 
@@ -72,7 +94,8 @@ function renderMain(tasks: Task[]) {
   `;
 
   document.getElementById('add-btn')!.addEventListener('click', () => {
-    window.open('?quick=1', '', 'width=420,height=280');
+    log('debug', 'Add Task button clicked – opening quick window');
+    window.api.openQuick();
   });
 }
 

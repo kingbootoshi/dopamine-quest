@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron';
+import { ipcMain, BrowserWindow } from 'electron';
 import crypto from 'node:crypto';
 import { loadTasks, saveTask, Task } from './store';
 import { getLogger } from './logger';
@@ -28,6 +28,12 @@ export function registerIpc() {
     };
 
     await saveTask(task);
+
+    // Notify every open window so the UI can update in real‑time
+    BrowserWindow.getAllWindows().forEach((win) => {
+      win.webContents.send('tasks:added', task);
+    });
+
     return task;
   });
 

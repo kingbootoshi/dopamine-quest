@@ -15,8 +15,9 @@ export interface IElectronAPI {
   addTask: (title: string) => Promise<void>;
   getTasks: () => Promise<Task[]>;
   getProfile: () => Promise<Profile | null>;
-  setProfile: (profile: any) => Promise<void>; // Consider defining a Profile type
+  setProfile: (profile: any) => Promise<void>;
   openQuick: () => Promise<void>;
+  onTaskAdded: (handler: (task: Task) => void) => void;
   log: (level: string, msg: string) => void;
 }
 
@@ -46,6 +47,11 @@ function log(level: string, message: string) {
 
 const params = new URLSearchParams(location.search);
 const isQuick = params.get('quick') === '1';
+
+// ----------------- STATE ----------------- //
+let prevLevel: number | null = null;
+let tasksCache: Task[] = [];
+// ----------------------------------------- //
 
 async function ensureProfile(): Promise<Profile> {
   const existing = await window.api.getProfile();
@@ -97,8 +103,6 @@ async function renderQuickAdd() {
   });
 }
 
-let prevLevel = 1;
-
 function renderMain(tasks: Task[]) {
   const totalXP = tasks.reduce((sum, t) => sum + t.xp, 0);
   const level = Math.floor(totalXP / 100) + 1;
@@ -106,7 +110,8 @@ function renderMain(tasks: Task[]) {
   const progress = xpIntoLevel / 100;
   const streak = calcStreak(tasks);
 
-  if (level > prevLevel) {
+  // Play level‑up sound only if we actually just crossed a level boundary
+  if (prevLevel !== null && level > prevLevel) {
     levelUpSfx.currentTime = 0;
     levelUpSfx
       .play()
@@ -135,7 +140,19 @@ function renderMain(tasks: Task[]) {
 (async () => {
   if (!isQuick) await ensureProfile();
 
-  const tasks = await window.api.getTasks();
-  if (isQuick) await renderQuickAdd();
-  else renderMain(tasks);
+  if (isQuick) {
+    await renderQuickAdd();
+    return;
+  }
+
+  // MAIN WINDOW FLOW
+  tasksCache = await window.api.getTasks();
+  renderMain(tasksCache);
+
+  // Listen for new tasks and update UI in real‑time
+  window.api.onTaskAdded((task: Task) => {
+    log('debug', `Received tasks:added for "${task.title}"`);
+    tasksCache.push(task);
+    renderMain(tasksCache);
+  });
 })();

@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron';
 import crypto from 'node:crypto';
 import { loadTasks, saveTask, Task } from './store';
-import logger from './logger';
+import { getLogger } from './logger';
 import { createQuickWindow } from './windows';
 import { loadProfile, saveProfile, Profile } from './profile';
 import { chooseXp } from './ai';
@@ -9,12 +9,12 @@ import { chooseXp } from './ai';
 export function registerIpc() {
   // ---------- Task channels ----------
   ipcMain.handle('tasks:get', async () => {
-    logger.debug('IPC get tasks');
+    getLogger('ipc').debug('IPC get tasks');
     return loadTasks();
   });
 
   ipcMain.handle('tasks:add', async (_e, payload: { title: string }) => {
-    logger.debug('IPC add task');
+    getLogger('ipc').debug('IPC add task');
 
     const profile = await loadProfile();
     const { category, xp } = await chooseXp(payload.title, profile);
@@ -37,12 +37,12 @@ export function registerIpc() {
 
   // ---------- UI channels ----------
   ipcMain.handle('quick:create', async () => {
-    logger.debug('IPC quick:create');
+    getLogger('ipc').debug('IPC quick:create');
     createQuickWindow();
   });
 
   // ---------- Renderer‑side logging ----------
   ipcMain.on('log:renderer', (_e, level: string, message: string) => {
-    logger.log({ level, message: `[renderer] ${message}` });
+    getLogger('ipc').log({ level, message: `[renderer] ${message}` });
   });
 }

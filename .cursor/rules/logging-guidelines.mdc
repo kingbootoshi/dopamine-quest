@@ -1,0 +1,46 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+ # Logging Guidelines for AI Agents
+
+This document outlines how logging should be implemented within this codebase to ensure clarity, maintainability, and effective debugging without excessive noise.
+
+**Core Philosophy:** Log strategically. Focus on capturing **significant events, key decisions, data transformations, and errors**. Avoid logging trivial operations or overly verbose details outside of `debug` level.
+
+**1. Use the Provided Logger:**
+
+*   **ALWAYS** import and use the `getLogger` function from `src/main/logger.ts`.
+*   **MUST** provide a descriptive `moduleName` that clearly identifies the source of the log messages.
+    ```typescript
+    import { getLogger } from './main/logger';
+    const logger = getLogger('ModuleName'); // e.g., 'ai', 'database', 'renderer-ipc'
+    ```
+
+**2. Use Appropriate Log Levels:**
+
+*   `logger.error(message, errorObject?, metadata?)`:
+    *   Use for **actual runtime errors**, failed operations that prevent normal execution, and unexpected exceptions.
+    *   **ALWAYS** include the `Error` object if available.
+    *   Example: Catching an API call failure, database connection error, file system error.
+*   `logger.warn(message, metadata?)`:
+    *   Use for **potential problems**, unexpected situations that don't necessarily halt execution, or deprecated feature usage.
+    *   Example: API returning unexpected data format, configuration fallback, retry attempts.
+*   `logger.info(message, metadata?)`:
+    *   Use for **significant application lifecycle events** and **key workflow milestones**.
+    *   Think: "What would I need to see to understand the main flow of the application?"
+    *   Example: Application start/stop, service initialization, major user action initiated (like starting XP calculation), successful completion of a significant background task.
+*   `logger.debug(message, dataObject?)`:
+    *   Use for **detailed diagnostic information** helpful primarily during **development and troubleshooting**.
+    *   This is the *only* place for potentially verbose information.
+    *   Example: API request/response bodies (like in `ai.ts`), detailed function parameters, step-by-step execution flow within complex logic.
+
+**3. Be Concise and Informative:**
+
+*   Log messages should clearly state **what** happened or **what decision** was made.
+*   Include relevant **contextual data** (e.g., IDs, key parameters) as metadata objects, especially for `info`, `warn`, and `error` levels. The logger format will automatically serialize these.
+*   **AVOID** logging inside tight loops unless it's crucial for debugging and strictly at the `debug` level.
+*   **DO NOT** log secrets or sensitive user data.
+
+**Summary:** Prioritize logging errors, warnings, major application events (`info`), and detailed debugging data (`debug`). Always use the module-specific logger (`getLogger`) for context.

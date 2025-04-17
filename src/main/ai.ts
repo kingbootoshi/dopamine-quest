@@ -2,8 +2,12 @@ import OpenAI from 'openpipe/openai';
 import type { ChatCompletionTool, ChatCompletionMessageParam } from 'openai/resources';
 import type { Profile } from './profile';
 import dotenv from 'dotenv';
+import { getLogger } from './logger'; // Import the logger
 
 dotenv.config();
+
+// Create a logger instance specific to the AI module
+const logger = getLogger('ai');
 
 /**
  * @interface XpRange
@@ -75,6 +79,7 @@ async function callOpenRouter(messages: any[]): Promise<XpRange | null> {
   ];
 
   try {
+    logger.debug('Calling OpenRouter with messages:', messages);
     // Make the chat completion request to OpenRouter via the SDK
     const completion = await openai.chat.completions.create({
       model: 'openai/gpt-4o-mini', // Specify the model to use
@@ -90,6 +95,9 @@ async function callOpenRouter(messages: any[]): Promise<XpRange | null> {
       // store: true,
     });
 
+    // Log the raw response before parsing
+    logger.debug('Received raw response from OpenRouter:', completion.choices[0]?.message);
+
     // Extract the tool call information from the response
     const toolCalls = completion.choices[0]?.message?.tool_calls;
     if (toolCalls?.length) {
@@ -99,6 +107,7 @@ async function callOpenRouter(messages: any[]): Promise<XpRange | null> {
         return typeof args === 'string' ? JSON.parse(args) : args;
       } catch (parseError) {
         console.error('Error parsing tool call arguments:', parseError);
+        logger.error('Error parsing tool call arguments:', { arguments: args, error: parseError });
         return null; // Return null if parsing fails
       }
     }
@@ -112,9 +121,11 @@ async function callOpenRouter(messages: any[]): Promise<XpRange | null> {
     }
 
     console.warn('No valid tool call or parsable content found in response.');
+    logger.warn('No valid tool call or parsable content found in OpenRouter response.', { response: completion.choices[0]?.message });
     return null; // Return null if no valid response structure is found
   } catch (error) {
     console.error('Error calling OpenRouter via OpenPipe SDK:', error);
+    logger.error('Error calling OpenRouter via OpenPipe SDK:', { error });
     // Re-throw the error to be caught by the calling function (chooseXp) for retry logic
     throw error;
   }
@@ -134,6 +145,9 @@ export async function chooseXp(
   title: string,
   profile: Profile | null,
 ): Promise<{ category: string; xp: number }> {
+  // Log the input task details that trigger the AI
+  logger.info(`Choosing XP for task: "${title}"`, { profile });
+
   // Retry mechanism with exponential backoff
   for (let attempt = 0; attempt < 3; attempt++) {
     try {
@@ -168,11 +182,13 @@ Goals: ${profile.goals}` : 'User profile not provided.'}`;
       } else {
         // Log a warning if the range is invalid (e.g., min_xp > max_xp)
         console.warn('Received invalid range from AI:', range);
+        logger.warn('Received invalid or incomplete range from AI', { range });
         // Continue to the next attempt (or fallback if this was the last attempt)
       }
     } catch (error) {
       // Log the error during the attempt
       console.error(`Attempt ${attempt + 1} failed:`, error);
+      logger.error(`Attempt ${attempt + 1} to call OpenRouter failed`, { error });
       // Wait before retrying, increasing the delay each time
       if (attempt < 2) { // Only wait if there are more attempts left
          await new Promise((r) => setTimeout(r, (attempt + 1) * 1000)); // Increased backoff time
@@ -182,6 +198,7 @@ Goals: ${profile.goals}` : 'User profile not provided.'}`;
 
   // Ultimate fallback: If all attempts fail, use a random default range
   console.warn('All attempts to call AI failed. Using default fallback XP range.');
+  logger.warn('All attempts to call AI failed. Using default fallback XP range.');
   const [category, [min, max]] = Object.entries(DEFAULT_RANGES)[
     Math.floor(Math.random() * Object.keys(DEFAULT_RANGES).length)
   ] as [string, [number, number]];

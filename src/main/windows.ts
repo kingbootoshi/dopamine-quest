@@ -1,7 +1,7 @@
 import { BrowserWindow } from 'electron';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import logger from './logger';
+import { getLogger } from './logger';
 
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string | undefined;
 declare const MAIN_WINDOW_VITE_NAME: string;
@@ -15,7 +15,7 @@ function buildFileUrl(): string {
 }
 
 export function createMainWindow() {
-  logger.debug('Creating main window');
+  getLogger('main').debug('Creating main window');
   mainWindow = new BrowserWindow({
     width: 900,
     height: 650,
@@ -35,7 +35,7 @@ export function createQuickWindow() {
     quickWindow.focus();
     return;
   }
-  logger.debug('Creating quick‑add window');
+  getLogger('main').debug('Creating quick‑add window');
   quickWindow = new BrowserWindow({
     width: 420,
     height: 280,

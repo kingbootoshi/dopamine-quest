@@ -1,7 +1,10 @@
 import { ipcMain } from 'electron';
-import { loadTasks, saveTask } from './store';
+import crypto from 'node:crypto';
+import { loadTasks, saveTask, Task } from './store';
 import logger from './logger';
 import { createQuickWindow } from './windows';
+import { loadProfile, saveProfile, Profile } from './profile';
+import { chooseXp } from './ai';
 
 export function registerIpc() {
   // ---------- Task channels ----------
@@ -10,10 +13,27 @@ export function registerIpc() {
     return loadTasks();
   });
 
-  ipcMain.handle('tasks:add', async (_e, task) => {
+  ipcMain.handle('tasks:add', async (_e, payload: { title: string }) => {
     logger.debug('IPC add task');
-    return saveTask(task);
+
+    const profile = await loadProfile();
+    const { category, xp } = await chooseXp(payload.title, profile);
+
+    const task: Task = {
+      id: crypto.randomUUID(),
+      title: payload.title,
+      category,
+      xp,
+      createdAt: new Date().toISOString(),
+    };
+
+    await saveTask(task);
+    return task;
   });
+
+  // ---------- Profile channels ----------
+  ipcMain.handle('profile:get', async () => loadProfile());
+  ipcMain.handle('profile:set', async (_e, profile: Profile) => saveProfile(profile));
 
   // ---------- UI channels ----------
   ipcMain.handle('quick:create', async () => {

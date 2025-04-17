@@ -27,6 +27,7 @@
     "@electron-forge/plugin-fuses": "^7.8.0",
     "@electron-forge/plugin-vite": "^7.8.0",
     "@electron/fuses": "^1.8.0",
+    "@types/electron-squirrel-startup": "^1.0.2",
     "@typescript-eslint/eslint-plugin": "^5.62.0",
     "@typescript-eslint/parser": "^5.62.0",
     "electron": "35.1.5",
@@ -37,7 +38,10 @@
     "vite": "^5.4.18"
   },
   "dependencies": {
+    "dotenv": "^16.4.5",
     "electron-squirrel-startup": "^1.0.1",
+    "openai": "^4.95.0",
+    "openpipe": "^0.49.0",
     "winston": "^3.17.0"
   }
 }

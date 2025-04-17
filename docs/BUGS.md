@@ -1,0 +1,2 @@
+- when i start the app or refresh the app, the level up sound plays , currently at level 2 2/100 XP, it should only play on level up
+- adding tasks don't automatically get updated, i have to refresh the app- adding any task should get automatically updated. UI should be constantly dynamic

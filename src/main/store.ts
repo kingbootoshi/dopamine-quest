@@ -6,8 +6,7 @@ import logger from './logger';
 export interface Task {
   id: string;
   title: string;
-  impact: number;
-  complexity: number;
+  category: string;
   xp: number;
   createdAt: string;
 }
@@ -26,7 +25,7 @@ export async function loadTasks(): Promise<Task[]> {
   await ensureFile();
   const raw = await fs.readFile(filePath, 'utf-8');
   try {
-    const tasks = JSON.parse(raw);
+    const tasks: Task[] = JSON.parse(raw);
     logger.debug(`Loaded ${tasks.length} tasks`);
     return tasks;
   } catch (err) {

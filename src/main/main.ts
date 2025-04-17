@@ -1,11 +1,10 @@
-import { app, globalShortcut } from 'electron';
+import { app, globalShortcut, BrowserWindow } from 'electron';
 import started from 'electron-squirrel-startup';
 import { createMainWindow, createQuickWindow } from './windows';
 import { registerIpc } from './ipc';
 import logger from './logger';
 
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string | undefined;
-declare const MAIN_WINDOW_VITE_NAME: string;
 
 if (started) {
   app.quit();
@@ -25,7 +24,7 @@ app.on('window-all-closed', () => {
 });
 
 app.on('activate', () => {
-  if (global.BrowserWindow?.getAllWindows().length === 0) {
+  if (BrowserWindow.getAllWindows().length === 0) {
     createMainWindow();
   }
 });

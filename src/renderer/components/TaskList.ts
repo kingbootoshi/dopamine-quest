@@ -1,4 +1,4 @@
-import type { Task } from '../../../main/store';
+import type { Task } from '../../main/store';
 
 export function TaskList(tasks: Task[]): string {
   return tasks

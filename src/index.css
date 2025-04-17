@@ -6,6 +6,7 @@ body {
   background-color: #1f2937;
   color: #f9fafb;
   -webkit-user-select: none;
+  user-select: none;
 }
 
 #app {

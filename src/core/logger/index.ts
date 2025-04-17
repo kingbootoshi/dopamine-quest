@@ -146,7 +146,7 @@ const baseLogger: winston.Logger = createLogger({
  * @example
  * ```typescript
  * // In src/renderer/someComponent.ts
- * import { getLogger } from '../main/logger';
+ * import { getLogger } from '../core/logger';
  * const logger = getLogger('RendererComponent');
  *
  * logger.info('Component initialized.');

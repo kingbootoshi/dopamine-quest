@@ -8,14 +8,14 @@ import { TaskList } from './renderer/components/TaskList';
 import { QUICK_MODAL_HTML } from './renderer/components/QuickAddModal';
 import { PROFILE_MODAL_HTML } from './renderer/components/ProfileModal';
 
-import type { Task } from './main/store';
+import type { Task, Profile } from './shared/types/domain';
 
 // --- Augment Window interface ---
 export interface IElectronAPI {
   addTask: (title: string) => Promise<void>;
   getTasks: () => Promise<Task[]>;
   getProfile: () => Promise<Profile | null>;
-  setProfile: (profile: any) => Promise<void>;
+  setProfile: (profile: Profile) => Promise<void>;
   openQuick: () => Promise<void>;
   onTaskAdded: (handler: (task: Task) => void) => void;
   log: (level: string, msg: string) => void;
@@ -33,7 +33,7 @@ const addTaskSfx = new Audio(addTaskSrc);
 const levelUpSfx = new Audio(levelUpSrc);
 // --------------- //
 
-type Profile = { name: string; lifeStage: string; goals: string };
+// Profile type is now imported from shared/types/domain
 
 // tiny helper so we never lose logs
 function log(level: string, message: string) {

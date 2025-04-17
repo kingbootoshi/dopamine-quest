@@ -1,8 +1,8 @@
 import { app, globalShortcut, BrowserWindow } from 'electron';
 import started from 'electron-squirrel-startup';
-import { createMainWindow, createQuickWindow } from './windows';
-import { registerIpc } from './ipc';
-import { getLogger } from './logger';
+import { createMainWindow, createQuickWindow } from '../core/windows';
+import { registerIpc } from '../core/ipc';
+import { getLogger } from '../core/logger';
 
 declare const MAIN_WINDOW_VITE_DEV_SERVER_URL: string | undefined;
 

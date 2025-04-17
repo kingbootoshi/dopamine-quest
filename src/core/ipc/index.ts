@@ -1,10 +1,11 @@
 import { ipcMain, BrowserWindow } from 'electron';
 import crypto from 'node:crypto';
-import { loadTasks, saveTask, Task } from './store';
-import { getLogger } from './logger';
-import { createQuickWindow } from './windows';
-import { loadProfile, saveProfile, Profile } from './profile';
-import { chooseXp } from './ai';
+import { getLogger } from '../logger';
+import { createQuickWindow } from '../windows';
+import { loadTasks, saveTask } from '../../features/persistence/taskStore';
+import { loadProfile, saveProfile } from '../../features/persistence/profileStore';
+import { chooseXp } from '../../features/ai';
+import type { Task, Profile } from '../../shared/types/domain';
 
 export function registerIpc() {
   // ---------- Task channels ----------

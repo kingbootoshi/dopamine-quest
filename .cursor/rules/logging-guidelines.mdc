@@ -3,7 +3,7 @@ description:
 globs: 
 alwaysApply: true
 ---
- # Logging Guidelines for AI Agents
+# Logging Guidelines for AI Agents
 
 This document outlines how logging should be implemented within this codebase to ensure clarity, maintainability, and effective debugging without excessive noise.
 
@@ -11,10 +11,10 @@ This document outlines how logging should be implemented within this codebase to
 
 **1. Use the Provided Logger:**
 
-*   **ALWAYS** import and use the `getLogger` function from `src/main/logger.ts`.
+*   **ALWAYS** import and use the `getLogger` function from `src/core/logger.ts`.
 *   **MUST** provide a descriptive `moduleName` that clearly identifies the source of the log messages.
     ```typescript
-    import { getLogger } from './main/logger';
+    import { getLogger } from '../../core/logger';
     const logger = getLogger('ModuleName'); // e.g., 'ai', 'database', 'renderer-ipc'
     ```
 

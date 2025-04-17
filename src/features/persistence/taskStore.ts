@@ -1,15 +1,8 @@
 import { app } from 'electron';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { getLogger } from './logger';
-
-export interface Task {
-  id: string;
-  title: string;
-  category: string;
-  xp: number;
-  createdAt: string;
-}
+import { getLogger } from '../../core/logger';
+import type { Task } from '../../shared/types/domain';
 
 const filePath = path.join(app.getPath('userData'), 'tasks.json');
 
@@ -26,10 +19,10 @@ export async function loadTasks(): Promise<Task[]> {
   const raw = await fs.readFile(filePath, 'utf-8');
   try {
     const tasks: Task[] = JSON.parse(raw);
-    getLogger('store').debug(`Loaded ${tasks.length} tasks`);
+    getLogger('taskStore').debug(`Loaded ${tasks.length} tasks`);
     return tasks;
   } catch (err) {
-    getLogger('store').error('Failed to parse tasks.json', err as Error);
+    getLogger('taskStore').error('Failed to parse tasks.json', err as Error);
     return [];
   }
 }
@@ -39,6 +32,6 @@ export async function saveTask(task: Task): Promise<Task> {
   const tasks = await loadTasks();
   tasks.push(task);
   await fs.writeFile(filePath, JSON.stringify(tasks, null, 2), 'utf-8');
-  getLogger('store').info(`Saved task "${task.title}" (+${task.xp} XP)`);
+  getLogger('taskStore').info(`Saved task "${task.title}" (+${task.xp} XP)`);
   return task;
 }

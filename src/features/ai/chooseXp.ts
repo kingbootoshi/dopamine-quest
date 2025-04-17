@@ -1,23 +1,13 @@
 import OpenAI from 'openpipe/openai';
 import type { ChatCompletionTool, ChatCompletionMessageParam } from 'openai/resources';
-import type { Profile } from './profile';
 import dotenv from 'dotenv';
-import { getLogger } from './logger'; // Import the logger
+import { getLogger } from '../../core/logger';
+import type { Profile, XpRange } from '../../shared/types/domain';
 
 dotenv.config();
 
 // Create a logger instance specific to the AI module
 const logger = getLogger('ai');
-
-/**
- * @interface XpRange
- * @description Defines the structure for an XP range, including category and min/max values.
- */
-interface XpRange {
-  category: string;
-  min_xp: number;
-  max_xp: number;
-}
 
 /**
  * @const {Record<string, [number, number]>} DEFAULT_RANGES
@@ -45,11 +35,11 @@ const openai = new OpenAI({
  * @async
  * @function callOpenRouter
  * @description Makes a call to the OpenRouter API via the OpenPipe SDK to determine an XP range for a task.
- * @param {any[]} messages - The array of messages to send to the AI model.
+ * @param {ChatCompletionMessageParam[]} messages - The array of messages to send to the AI model.
  * @returns {Promise<XpRange | null>} A promise that resolves to the determined XP range or null if unsuccessful.
  * @throws {Error} Throws an error if the API call fails.
  */
-async function callOpenRouter(messages: any[]): Promise<XpRange | null> {
+async function callOpenRouter(messages: ChatCompletionMessageParam[]): Promise<XpRange | null> {
   // Define the tool for the AI to use for picking the XP range
   const tools: ChatCompletionTool[] = [
     {
